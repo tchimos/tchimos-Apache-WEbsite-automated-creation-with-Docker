@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+    latest_tag=$(sudo docker images --format "{{.Tag}}" website | sort -r | head -n1)
+    new_tag=$((latest_tag+1))
+    pipeline {
+    agent any
+    stages {
+        stage("Check for new commits") {
+            steps {
+                script {
+                    def repo = 'https://github.com/user/repo.git'
+                    def oldCommit = sh(returnStdout: true, script: "git ls-remote --heads ${repo} HEAD | awk '{print $1}'").trim()
+                    echo "Old commit: ${oldCommit}"
+                    sh "git clone ${repo}"
+                    cd('repo')
+                    def newCommit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
+                    echo "New commit: ${newCommit}"
+                    if (newCommit != oldCommit) {
+                        echo "There is a new commit. Cloning the repository."
+                    } else {
+                        echo "No new commit. Exiting."
+                        error("No new commit. Exiting.")
+                    }
+                }
+            }
+        }
+    }
+}
+
+        stage('building the images + generate version number + taging ') {
+            steps {
+                sh 'source apache_website1.sh'
+            }
+        }
+    
+        
+    stage('Building a container on the image ') {
+            steps {
+                sh 'source apache_website2.sh'
+            }
+    }
+    stage('Pushing the image to Amazon ECR') {
+            steps {
+                sh 'source ecr_push.sh'
+            }
+    }
+}
+

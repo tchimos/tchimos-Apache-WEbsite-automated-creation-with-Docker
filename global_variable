@@ -1,0 +1,3 @@
+#!/bin/bash
+latest_tag=$(sudo docker images --format "{{.Tag}}" website | sort -r | head -n1)
+new_tag=$((latest_tag+1))
