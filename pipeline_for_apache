@@ -1,7 +1,6 @@
 pipeline {
     agent any
-    def latest_tag=$(sh'sudo docker images --format "{{.Tag}}" website | sort -r | head -n1')
-    def new_tag=$((latest_tag+1))
+    
     stages {
          stages {
         stage('Cloning') {
@@ -13,6 +12,8 @@ pipeline {
 
         stage('building the images + generate version number + taging ') {
             steps {
+            def latest_tag=$(sh'sudo docker images --format "{{.Tag}}" website | sort -r | head -n1')
+            def new_tag=$((latest_tag+1))
                 sh './apache_website1.sh'
             }
         }
@@ -20,6 +21,7 @@ pipeline {
         
     stage('Building a container on the image ') {
             steps {
+            
                 sh './apache_website2.sh'
             }
     }
